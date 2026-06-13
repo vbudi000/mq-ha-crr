@@ -1,0 +1,7 @@
+#!/bin/bash
+
+qm=1
+host=$host
+
+ssh ${host} "dspmq -o nativeha -g -x"
+
