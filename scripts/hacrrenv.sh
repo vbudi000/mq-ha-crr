@@ -21,12 +21,12 @@ qmname="MYQMGR"
 # Do not modify the rest of the file
 # --------------------------------------------------------
 
-ip11=$(dig +short ${host11})
-ip12=$(dig +short ${host12})
-ip13=$(dig +short ${host13})
+ip11=$(getent hosts ${host11} | awk '{print $1}')
+ip12=$(getent hosts ${host12} | awk '{print $1}')
+ip13=$(getent hosts ${host13} | awk '{print $1}')
 
-ip21=$(dig +short ${host21})
-ip22=$(dig +short ${host22})
-ip23=$(dig +short ${host23})
+ip21=$(getent hosts ${host21} | awk '{print $1}')
+ip22=$(getent hosts ${host22} | awk '{print $1}')
+ip23=$(getent hosts ${host23} | awk '{print $1}')
 
 
