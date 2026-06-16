@@ -1,0 +1,162 @@
+#!/bin/bash
+################################################################################
+# IBM MQ Message Sender
+# Sends messages to MQ queue every second using amqsputc
+# Messages contain timestamp and random text
+################################################################################
+
+# Color codes for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Function to display usage
+usage() {
+    echo "Usage: $0 <queue_name> <qmgr_name> <username> <password>"
+    echo ""
+    echo "Arguments:"
+    echo "  queue_name  - Name of the MQ queue"
+    echo "  qmgr_name   - Name of the queue manager"
+    echo "  username    - MQ username for authentication"
+    echo "  password    - MQ password for authentication"
+    echo ""
+    echo "Example:"
+    echo "  $0 TEST.QUEUE QM1 mquser mqpass123"
+    echo ""
+    echo "Note: Username is set in MQSAMP_USER_ID environment variable"
+    echo "      Password is passed as first line to amqsputc"
+    echo ""
+    echo "Press Ctrl+C to stop sending messages"
+    exit 1
+}
+
+# Function to generate random message
+generate_random_message() {
+    local messages=(
+        "System status check"
+        "Transaction processed"
+        "Data update notification"
+        "Health check ping"
+        "Service heartbeat"
+        "Monitoring alert"
+        "Process completed"
+        "Queue status update"
+        "Application event"
+        "System notification"
+        "Performance metric"
+        "Audit log entry"
+        "Configuration change"
+        "User activity logged"
+        "Batch job completed"
+    )
+    
+    # Get random index
+    local index=$((RANDOM % ${#messages[@]}))
+    echo "${messages[$index]}"
+}
+
+# Function to send message to MQ
+send_message() {
+    local queue=$1
+    local qmgr=$2
+    local password=$3
+    local timestamp=$4
+    local random_msg=$5
+    
+    # Construct the full message
+    local full_message="Timestamp: ${timestamp} | Message: ${random_msg}"
+    
+    # Set MQ environment variables for authentication
+    #mqsvr=$(ssh vbudi-mq-1 bash checkactiveinstance.sh 2>/dev/null)
+    mqsvr="localhost"
+    export MQSERVER="SYSTEM.DEF.SVRCONN/TCP/$mqsvr(1414)"
+    
+    # Send message using amqsputc
+    # Password is sent as first line, followed by the message
+    # amqsputc expects: password on first line, then message(s), then empty line to end
+    (echo "${password}"; echo "${full_message}"; echo "") | amqsputc "${queue}" "${qmgr}" 2>/dev/null
+    
+    local exit_code=$?
+    
+    if [ $exit_code -eq 0 ]; then
+        echo -e "${GREEN}[SUCCESS]${NC} Sent: ${full_message}"
+        return 0
+    else
+        echo -e "${RED}[ERROR]${NC} Failed to send message (exit code: ${exit_code})"
+        return 1
+    fi
+}
+
+# Function to handle cleanup on exit
+cleanup() {
+    echo ""
+    echo -e "${YELLOW}Stopping message sender...${NC}"
+    echo "Total messages sent: ${message_count}"
+    echo "Total failures: ${failure_count}"
+    exit 0
+}
+
+# Main function
+main() {
+    # Check arguments
+    
+    local queue_name=QUEUE1
+    local qmgr_name=MYQMGR
+    local username=root
+    local password=root
+    
+    # Check if amqsputc is available
+    if ! command -v amqsputc &> /dev/null; then
+        echo -e "${RED}Error: amqsputc command not found${NC}"
+        echo "Please ensure IBM MQ client is installed and in PATH"
+        exit 1
+    fi
+    
+    # Display configuration
+    echo "=================================="
+    echo "IBM MQ Message Sender"
+    echo "=================================="
+    echo "Queue Name:    ${queue_name}"
+    echo "Queue Manager: ${qmgr_name}"
+    echo "Username:      ${username}"
+    echo "Password:      ****"
+    echo "=================================="
+    echo ""
+    echo "Starting message sender (Press Ctrl+C to stop)..."
+    echo ""
+    
+    # Set up signal handler for graceful shutdown
+    trap cleanup SIGINT SIGTERM
+    
+    # Initialize counters
+    message_count=0
+    failure_count=0
+    
+    # Set MQ authentication environment variables
+    export MQSAMP_USER_ID="${username}"
+    
+    # Main loop - send message every second
+    while true; do
+        # Get current timestamp
+        timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+        
+        # Generate random message
+        random_msg=$(generate_random_message)
+        
+        # Send message to MQ (password is passed, username is in MQSAMP_USER_ID)
+        if send_message "${queue_name}" "${qmgr_name}" "${password}" "${timestamp}" "${random_msg}"; then
+            ((message_count++))
+        else
+            ((failure_count++))
+        fi
+        
+        # Wait 1 second before next message
+        sleep 1
+    done
+}
+
+# Run main function with all arguments
+main "$@"
+
+# Made with Bob
