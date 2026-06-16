@@ -6,6 +6,7 @@ Download IBM MQ from Passport Advantage Online site or IBM Software Download sit
 - M0SJDML 9.4.4.0-IBM-MQ-LinuxX64_.tar.gz
 - M0XKZML 9.4.5.0-IBM-MQ-LinuxX64_.tar.gz
 
+The next section, the installation and Web console should be run on each of the 6 servers. Automatic installation on the servers are provided in [scripts/2-0-runinstall.sh](scripts/2-0-runinstall.sh), or you can run the installation manually. The installation file must be put on each of the 6 servers. So that it can be installed later.
 
 ## Installing
 

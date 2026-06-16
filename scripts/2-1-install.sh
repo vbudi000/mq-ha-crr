@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ -n "$1" ]; then
+    tarfile="$1"
+else 
+    tarfile="9.4.5.0-IBM-MQ-LinuxX64_.tar.gz"
+fi
+
 # Create mqm user and group with consistent GID
 groupadd -g 1000 mqm
 useradd -u 1000 -g 1000 -d /home/mqm mqm 
@@ -32,7 +38,7 @@ chmod 700 /home/mqm/.ssh
 sudo -u mqm ssh-keygen -t rsa -b 4096 -f /home/mqm/.ssh/id_rsa -N "" -q
  
 cd /tmp
-tar -xzvf 9.4.4.0-IBM-MQ-LinuxX64_.tar.gz
+tar -xzvf ${tarfile}
 
 cd MQServer
 ./mqlicense.sh -accept
