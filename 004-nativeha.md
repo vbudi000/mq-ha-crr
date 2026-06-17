@@ -43,3 +43,8 @@ Follow these procedure:
 
 See the following 
 
+<video width="640" height="360" controls>
+  <source src="images/mq-nativeha.mov" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
