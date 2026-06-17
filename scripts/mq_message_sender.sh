@@ -18,11 +18,13 @@ usage() {
     echo "Arguments:"
     echo "  queue_name  - Name of the MQ queue"
     echo "  qmgr_name   - Name of the queue manager"
+    echo "  qmhost      - Hostname of the Queue Manager"
+    echo "  svrconn_chl - Channel name"
     echo "  username    - MQ username for authentication"
     echo "  password    - MQ password for authentication"
     echo ""
     echo "Example:"
-    echo "  $0 TEST.QUEUE QM1 mquser mqpass123"
+    echo "  $0 TEST.QUEUE QM1 localhost SYSTEM.DEF.SVRCONN mquser mqpass123"
     echo ""
     echo "Note: Username is set in MQSAMP_USER_ID environment variable"
     echo "      Password is passed as first line to amqsputc"
@@ -60,17 +62,18 @@ generate_random_message() {
 send_message() {
     local queue=$1
     local qmgr=$2
-    local password=$3
-    local timestamp=$4
-    local random_msg=$5
+    local qmhost=$3
+    local chlname=$4
+    local password=$5
+    local timestamp=$6
+    local random_msg=$7
     
     # Construct the full message
     local full_message="Timestamp: ${timestamp} | Message: ${random_msg}"
     
     # Set MQ environment variables for authentication
     #mqsvr=$(ssh vbudi-mq-1 bash checkactiveinstance.sh 2>/dev/null)
-    mqsvr="localhost"
-    export MQSERVER="SYSTEM.DEF.SVRCONN/TCP/$mqsvr(1414)"
+    export MQSERVER="${chlname}/TCP/${qmhost}}(1414)"
     
     # Send message using amqsputc
     # Password is sent as first line, followed by the message
@@ -83,7 +86,7 @@ send_message() {
         echo -e "${GREEN}[SUCCESS]${NC} Sent: ${full_message}"
         return 0
     else
-        echo -e "${RED}[ERROR]${NC} Failed to send message (exit code: ${exit_code})"
+        echo -e -n "${RED}-${NC}"
         return 1
     fi
 }
@@ -101,10 +104,13 @@ cleanup() {
 main() {
     # Check arguments
     
-    local queue_name=QUEUE1
-    local qmgr_name=MYQMGR
-    local username=root
-    local password=root
+    local queue_name=${1:-QUEUE1}
+    local qmgr_name=${2:-MYQMGR}
+    local qmhost=${3:-localhost}
+    local chlname=${4:-SYSTEM.DEF.SVRCONN}
+
+    local username=${5:-root}
+    local password=${6:-root}
     
     # Check if amqsputc is available
     if ! command -v amqsputc &> /dev/null; then
@@ -119,6 +125,8 @@ main() {
     echo "=================================="
     echo "Queue Name:    ${queue_name}"
     echo "Queue Manager: ${qmgr_name}"
+    echo "QM Host:       ${qmhost}"
+    echo "Channel:       ${chlname}"
     echo "Username:      ${username}"
     echo "Password:      ****"
     echo "=================================="
@@ -139,20 +147,20 @@ main() {
     # Main loop - send message every second
     while true; do
         # Get current timestamp
-        timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+        timestamp=$(date '+%Y-%m-%d %H:%M:%S.%3N')
         
         # Generate random message
         random_msg=$(generate_random_message)
         
         # Send message to MQ (password is passed, username is in MQSAMP_USER_ID)
-        if send_message "${queue_name}" "${qmgr_name}" "${password}" "${timestamp}" "${random_msg}"; then
+        if send_message "${queue_name}" "${qmgr_name}" "${qmhost}" "${chlname}" "${password}" "${timestamp}" "${random_msg}"; then
             ((message_count++))
         else
             ((failure_count++))
         fi
         
         # Wait 1 second before next message
-        sleep 1
+        sleep 0.1
     done
 }
 
