@@ -11,7 +11,7 @@ sudo systemctl set-default graphical.target
 printf "passw0rd\npassw0rd\n" | vncpasswd
 vncserver
 vncserver -kill :1
-cat <EOF > ~/.vnc/xstartup
+cat <<EOF > ~/.vnc/xstartup
 #!/bin/sh
 unset SESSION_MANAGER
 unset DBUS_SESSION_BUS_ADDRESS
@@ -23,9 +23,9 @@ vncserver
 
 # install firefox
 
-sudo dnf config-manager addrepo --id=mozilla --set=baseurl=https://packages.mozilla.org/rpm/firefox --set=gpgkey=https://packages.mozilla.org/rpm/firefox/signing-key.gpg --set=gpgcheck=1 --set=repo_gpgcheck=0 --set=priority=10
+#sudo dnf config-manager addrepo --id=mozilla --set=baseurl=https://packages.mozilla.org/rpm/firefox --set=gpgkey=https://packages.mozilla.org/rpm/firefox/signing-key.gpg --set=gpgcheck=1 --set=repo_gpgcheck=0 --set=priority=10
 sudo dnf makecache --refresh
-sudo dnf install firefox
+sudo dnf -y install firefox
 
 
 ## create an SSH tunnel

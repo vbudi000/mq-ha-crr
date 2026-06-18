@@ -7,7 +7,7 @@ sudo systemctl stop haproxy
 
 mv /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.bak
 
-cat <EOF >>/etc/haproxy.cfg
+cat <<EOF >>/etc/haproxy/haproxy.cfg
 defaults
     mode                    tcp
     log                     global
