@@ -9,6 +9,12 @@ Download IBM MQ from Passport Advantage Online site or IBM Software Download sit
 
 The next section, the installation and Web console should be run on each of the 6 servers. Automatic installation on the servers are provided in [scripts/2-0-runinstall.sh](scripts/2-0-runinstall.sh), or you can run the installation manually. The installation file must be put on each of the 6 servers. So that it can be installed later.
 
+Also clone this git repository into the bastion/load balancer node:
+
+``` bash
+git clone https://github.com/vbudi000/mq-ha-crr.git
+```
+
 ## Installing
 
 To install IBM MQ you can use the script in [scripts/2-1-install.sh](scripts/2-1-install.sh). Or you can follow these procedure: 
