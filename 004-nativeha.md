@@ -35,11 +35,19 @@ Follow these procedure:
     bash scripts/mq_message_sender.sh
     ```
 
-3. Run these command to switch the active MQ server as you watch the changes in the other 2 command windows:
+3. Run these command to switch the active MQ server as you watch the changes in the other `dspmq` output and the message sender window:
 
     ``` bash
     ssh <activemqhost> sudo systemctl restart mqmonitor@<qmgr>
     ```
+
+    note - if you are lazy to see which host is actually active, you can run the following script
+    
+    ``` bash
+    bash scripts/4-2-haswap.sh
+    ```
+
+
 
 See the following 
 
