@@ -1,10 +1,11 @@
 # Installing IBM MQ 
 
 ## Preparation
-Download IBM MQ from Passport Advantage Online site or IBM Software Download site. The following are the list of part numbers and filenames that you can use to search the download. The size for 9.4.x is roughly 0.5GB.
+Download IBM MQ from Passport Advantage Online site or IBM Software Download site. The following are the list of part numbers and filenames that you can use to search the download. The size for 9.4.x is roughly 0.5GB. The following are the Part Number and filename of the installers. 
 
-- M0SJDML 9.4.4.0-IBM-MQ-LinuxX64_.tar.gz
-- M0XKZML 9.4.5.0-IBM-MQ-LinuxX64_.tar.gz
+- M0SJDML - 9.4.4.0-IBM-MQ-LinuxX64_.tar.gz
+- M0XKZML - 9.4.5.0-IBM-MQ-LinuxX64_.tar.gz
+- M11G1ML - 10.0.0.0-IBM-MQ-LinuxX64.tar.gz
 
 The next section, the installation and Web console should be run on each of the 6 servers. Automatic installation on the servers are provided in [scripts/2-0-runinstall.sh](scripts/2-0-runinstall.sh), or you can run the installation manually. The installation file must be put on each of the 6 servers. So that it can be installed later.
 
