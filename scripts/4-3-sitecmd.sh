@@ -15,12 +15,12 @@ else
     exit 2
 fi
 
-if [[ "$site" == "$site1"]]; then
+if [[ "$site" == "$site1" ]]; then
     hosts=($host11 $host12 $host13)
     for host in "${hosts[@]}"; do
         ssh ${host} sudo systemctl ${action} mqmonitor@${QMGR} 2>/dev/null
     done
-elif [[ "$site" == "$site2"]]; then
+elif [[ "$site" == "$site2" ]]; then
     hosts=($host21 $host22 $host23)
     for host in "${hosts[@]}"; do
         ssh ${host} sudo systemctl ${action} mqmonitor@${QMGR} 2>/dev/null
