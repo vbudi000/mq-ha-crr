@@ -17,6 +17,8 @@ lbhost="vbudi-lb"
 
 qmname="MYQMGR"
 
+mqserver="10.0.0.0-IBM-MQ-LinuxX64.tar.gz"
+mqclient="10.0.0.0-IBM-MQC-LinuxX64.tar.gz"
 # --------------------------------------------------------
 # Do not modify the rest of the file
 # --------------------------------------------------------

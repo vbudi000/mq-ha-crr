@@ -2,12 +2,24 @@
 
 source hacrrenv.sh
 
+curpath="${1:-/root}"  
+tarfile=${mqclient}
+
 if [[ $(hostname -s) != "$lbhost" ]]; then
     echo "Error: Not running on $lbhost (current host: $(hostname))" >&2
     exit 1
 fi
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Error: This script must be run as root"
+    exit 1
+fi
+# Check if file exists
+if [ ! -f "${curpath}/${tarfile}" ]; then
+    echo "Error: /root/${tarfile} does not exist"
+    exit 1
+fi
 
-tar -xvzf /root/10.0.0.0-IBM-MQC-LinuxX64.tar.gz
+tar -xvzf ${curpath}/${tarfile}
 cd MQClient
 ./mqlicense.sh -accept
 dnf install -y MQ*

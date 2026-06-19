@@ -1,5 +1,13 @@
 #!/bin/bash
 source ./hacrrenv.sh
+if [[ $(hostname -s) != "$lbhost" ]]; then
+    echo "Error: Not running on $lbhost (current host: $(hostname))" >&2
+    exit 1
+fi
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Error: This script must be run as root"
+    exit 1
+fi
 
 sudo dnf -y install haproxy
 

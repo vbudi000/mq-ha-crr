@@ -5,13 +5,13 @@ if [ $# -ne 2 ]; then
 fi
 action=$2
 site=$1
-
+QMGR=$qmname
 valid_actions=("start" "stop" "status" "restart")
 
 if [[ " ${valid_actions[*]} " =~ " $action " ]]; then
     echo "Invoke ${action} on ${site}"
 else
-    echo "Invalid action: ${action}
+    echo "Invalid action: ${action}"
     exit 2
 fi
 
