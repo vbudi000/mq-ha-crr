@@ -15,8 +15,11 @@ mqm - nofile 65536
 mqm - nproc  32768
 EOF
 
+echo "mqm ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/mqm
+sudo chmod 0440 /etc/sudoers.d/mqm
+
 dnf -y install bc ca-certificates openssl libstdc++ wget util-linux
-dnf -y install shadow-utils glibc-common findutils gawk
+dnf -y install shadow-utils glibc-common findutils gawk xmlstarlet
 
 # use the following if firewalld is active
 firewall-cmd --permanent --add-port=mqlistener-1414/tcp

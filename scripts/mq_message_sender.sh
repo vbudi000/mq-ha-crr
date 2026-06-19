@@ -73,12 +73,12 @@ send_message() {
     
     # Set MQ environment variables for authentication
     #mqsvr=$(ssh vbudi-mq-1 bash checkactiveinstance.sh 2>/dev/null)
-    export MQSERVER="${chlname}/TCP/${qmhost}}(1414)"
+    export MQSERVER="${chlname}/TCP/${qmhost}(1414)"
     
     # Send message using amqsputc
     # Password is sent as first line, followed by the message
     # amqsputc expects: password on first line, then message(s), then empty line to end
-    (echo "${password}"; echo "${full_message}"; echo "") | amqsputc "${queue}" "${qmgr}" 2>/dev/null
+    (echo "${password}"; echo "${full_message}"; echo "") | amqsputc "${queue}" "${qmgr}" 1>/dev/null
     
     local exit_code=$?
     

@@ -95,7 +95,7 @@ This last part is optional. You can install MQ Web Console for easier management
     cp mqwebuser.xml mqwebuser.xml.bak
     cp /opt/mqm/web/mq/samp/configuration/basic_registry.xml mqwebuser.xml
 
-    cat <EOF >>mqwebuser.xml
+    cat <<EOF> >>mqwebuser.xml
     <variable name="httpsPort" value="9443"/>
     <variable name="httpHost" value="*"/>
     <variable name="mqRestMessagingEnabled" value="true”/>

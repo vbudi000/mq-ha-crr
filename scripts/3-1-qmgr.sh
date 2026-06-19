@@ -3,8 +3,8 @@
 curnode=$(hostname -s)
 
 source ./hacrrenv.sh
-cluster1=(host11 host12 host13)
-cluster2=(host21 host22 host23)
+cluster1=($host11 $host12 $host13)
+cluster2=($host21 $host22 $host23)
 
 if [[ " ${cluster1[*]} " =~ " $curnode " ]]; then
   curgrp=${site1}
