@@ -34,16 +34,20 @@ In the Live side, the command is run from the first instance arbitrarily. There 
 
 Follow these procedure:
 
-1. Keep a ssh session showing dspmq output using a watch command:
+1. Open three terminal (ssh) session to the bastion host. 
+
+2. Use one session to ssh to the one of the Live Queue Manager group, here we assume that SITE1 is Live. Keep showing dspmq output using a watch command:
 
     ``` bash
-    ssh #{host11} watch -n 5 dspmq -o nativeha -g -x
+    ssh ${host11}
+    watch -n 5 dspmq -o nativeha -g -x
     ```
 
-2. in another ssh session run the mq_message_sender program to launch a raandomized message to the MQ 
+2. Use another session run the mq_message_sender.sh program to launch a raandomized message to the MQ with timestamp.
 
     ``` bash
-    bash scripts/mq_message_sender.sh
+    cp scripts/mq_message_sender.sh /tmp
+    su - mqm /tmp/mq_message_sender.sh
     ```
 
 3. Run these command to switch the active MQ server as you watch the changes in the other `dspmq` output and the message sender window:
@@ -58,5 +62,8 @@ Follow these procedure:
     bash scripts/4-2-haswap.sh
     ```
 
-See the following 
+4. As you switch around the active queue manager, you can see in the watch output that the Active Queue Manager instance will move around the different members and the restarted Queue Manager instance that was Active becomes Replica. The sender program will shows failure but you can notice that the timestamp between the successful iteration are between less than 2 seconds.
 
+    ![images/004-03-haswap.png](images/004-03-haswap.png)
+
+    In the highlighted section, the time between successful messages are almost 1.7 seconds. 
