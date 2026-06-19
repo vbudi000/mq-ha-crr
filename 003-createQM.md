@@ -80,4 +80,3 @@ To make it easy to work across systems and enable a simple monitor, MQ provides 
     ```
     sudo systemctl start mqmonitor@${qmgr}
     ```
-    

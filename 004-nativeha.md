@@ -13,11 +13,22 @@ To understand the native HA and CRR environment, the command to check that is `d
 From the bastion, you can run the script [scripts/4-1-checkhacrr.sh](scripts/4-1-checkhacrr.sh)
 
 The following is a sample output:
+![images/004-01-ha-live.png](images/004-01-ha-live.png)
+![images/004-02-ha-recovery.png](images/004-02-ha-recovery.png)
 
-```
-```
+In the Live side, the command is run from the first instance arbitrarily. There is no specific preference on which instance will be active. 
 
-The Live group and the Recovery group information 
+- The first line is the short information of the current Queue Manager in the specific host. 
+- The `INSTANCE` lines are the local native HA group of Queue Manager (from option `-x`). The important information are:
+    - the individual `ROLE`s (Active, Leader, Replica) - only the Active instance is accepting client connection
+    - The `CONNACTV` indicates whether the connection is active on 9414
+    - The `INSYNC` shows whether the group member is synchronized. If so the `BACKLOG` should be 0 and the `ACKLSN` should all be the same.
+- The GRPNAME lines show the status of the interconnected groups (from option `-g`). The important information are:
+    - the `GRPROLE` of Live or Recovery
+    - The local group is indicated in the QMNAME line on the top, and should have a `GRSTATUS` of Normal
+    - The remote group should have the `INSYNC` status of yes
+    - When every pieces are in sync, then all the `RECOVLSN` should be the same and also matches with `ACKLSN` of the individual instances
+- Note that the timestamp of the timing is also presented, but the LSN (Log Sequence Number) are more accurate on identifying the status.
 
 ## Demonstrating automatic failover
 
@@ -46,8 +57,6 @@ Follow these procedure:
     ``` bash
     bash scripts/4-2-haswap.sh
     ```
-
-
 
 See the following 
 
