@@ -41,7 +41,7 @@ cat << EOF >> /var/mqm/qmgrs/${qmname}/qm.ini
    GroupLocalAddress=(9415)
 NativeHARecoveryGroup:
    GroupName=${site1}
-   ReplicationAddress=${ip21}(9415),${ip22}(9415),${ip23}(9415)
+   ReplicationAddress=${ip11}(9415),${ip12}(9415),${ip13}(9415)
    Enabled=Yes
 NativeHAInstance:
   Name=${host21}

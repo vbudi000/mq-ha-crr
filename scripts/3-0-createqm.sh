@@ -24,6 +24,6 @@ for host in "${hosts[@]}"; do
     scp 3-1-qmgr.sh ${host}:/tmp/3-1-qmgr.sh 2>/dev/null
     scp 3-2-mqmonitor.sh ${host}:/tmp/3-2-mqmonitor.sh 2>/dev/null
     ssh ${host} "echo \"cd /tmp && bash 3-1-qmgr.sh ${qmname}\" | sudo su - mqm" 2>/dev/null
-    ssh ${host} "sudo bash /tmp/3-2-mqmonitor.sh @qmname" 2>/dev/null
+    ssh ${host} "sudo bash /tmp/3-2-mqmonitor.sh ${qmname}" 2>/dev/null
 done
 

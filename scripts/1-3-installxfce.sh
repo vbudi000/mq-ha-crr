@@ -17,8 +17,8 @@ sudo systemctl set-default graphical.target
 sudo dnf -y install tigervnc-server
 
 printf "passw0rd\npassw0rd\n" | vncpasswd
-echo ":1 root" >> /etc/tigervnc.users
-sed -i 's/gnome/xfce/g' "/etc/vncserver-config-defaults"
+echo ":1=root" >> /etc/tigervnc/tigervnc.users
+sed -i 's/gnome/xfce/g' "/etc/tigervnc/vncserver-config-defaults"
 
 systemctl enable vncserver@:1
 systemctl start vncserver@:1
