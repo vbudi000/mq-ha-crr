@@ -4,21 +4,21 @@
 # --------------------------------------------------------
 
 site1="SITE1"
-host11="vbudi-mq-1"
-host12="vbudi-mq-2"
-host13="vbudi-mq-3"
+host11="mq-hacrr-01"
+host12="mq-hacrr-02"
+host13="mq-hacrr-03"
 
 site2="SITE2"
-host21="vbudi-mq21"
-host22="vbudi-mq22"
-host23="vbudi-mq23"
+host21="mq-hacrr-04"
+host22="mq-hacrr-05"
+host23="mq-hacrr-06"
 
-lbhost="vbudi-lb"
+lbhost="mq-hacrr-lb"
 
 qmname="MYQMGR"
 
-mqserver="10.0.0.0-IBM-MQ-LinuxX64.tar.gz"
-mqclient="10.0.0.0-IBM-MQC-LinuxX64.tar.gz"
+mqserver="9.4.5.0-IBM-MQ-LinuxX64_.tar.gz"
+mqclient="9.4.5.1-IBM-MQC-LinuxX64.tar.gz"
 # --------------------------------------------------------
 # Do not modify the rest of the file
 # --------------------------------------------------------

@@ -10,24 +10,18 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-sudo dnf -y install tigervnc-server
 sudo dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
 sudo dnf --enablerepo=epel group
 sudo dnf -y groupinstall "Xfce"
 sudo systemctl set-default graphical.target
+sudo dnf -y install tigervnc-server
 
 printf "passw0rd\npassw0rd\n" | vncpasswd
-vncserver
-vncserver -kill :1
-cat <<EOF > ~/.vnc/xstartup
-#!/bin/sh
-unset SESSION_MANAGER
-unset DBUS_SESSION_BUS_ADDRESS
-xrdb $HOME/.Xresources
-startxfce4 &
-EOF
+echo ":1 root" >> /etc/tigervnc.users
+sed -i 's/gnome/xfce/g' "/etc/vncserver-config-defaults"
 
-vncserver
+systemctl enable vncserver@:1
+systemctl start vncserver@:1
 
 # install firefox
 

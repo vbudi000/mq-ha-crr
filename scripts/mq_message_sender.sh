@@ -69,7 +69,7 @@ send_message() {
     local random_msg=$7
     
     # Construct the full message
-    local full_message="Timestamp: ${timestamp} | Message: ${random_msg}"
+    local full_message="${timestamp} | ${random_msg}"
     
     # Set MQ environment variables for authentication
     #mqsvr=$(ssh vbudi-mq-1 bash checkactiveinstance.sh 2>/dev/null)
@@ -78,12 +78,12 @@ send_message() {
     # Send message using amqsputc
     # Password is sent as first line, followed by the message
     # amqsputc expects: password on first line, then message(s), then empty line to end
-    (echo "${password}"; echo "${full_message}"; echo "") | amqsputc "${queue}" "${qmgr}" 1>/dev/null
+    (echo "${password}"; echo "${full_message}"; echo "") | amqsputc "${queue}" "${qmgr}" >/tmp/putcout
     
     local exit_code=$?
     
     if [ $exit_code -eq 0 ]; then
-        echo -e "${GREEN}[SUCCESS]${NC} Sent: ${full_message}"
+        echo -e "${GREEN}[SUCCESS]${NC} ${full_message}"
         return 0
     else
         echo -e -n "${RED}-${NC}"
