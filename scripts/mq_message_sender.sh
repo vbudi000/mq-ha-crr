@@ -13,7 +13,10 @@ NC='\033[0m' # No Color
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 <queue_name> <qmgr_name> <username> <password>"
+    echo "Usage: $0 [-m iterations] <queue_name> <qmgr_name> <username> <password>"
+    echo ""
+    echo "Options:"
+    echo "  -m iterations - Number of messages to send (default: unlimited)"
     echo ""
     echo "Arguments:"
     echo "  queue_name  - Name of the MQ queue"
@@ -24,7 +27,7 @@ usage() {
     echo "  password    - MQ password for authentication"
     echo ""
     echo "Example:"
-    echo "  $0 TEST.QUEUE QM1 localhost SYSTEM.DEF.SVRCONN mquser mqpass123"
+    echo "  $0 -m 100 TEST.QUEUE QM1 localhost SYSTEM.DEF.SVRCONN mquser mqpass123"
     echo ""
     echo "Note: Username is set in MQSAMP_USER_ID environment variable"
     echo "      Password is passed as first line to amqsputc"
@@ -102,8 +105,16 @@ cleanup() {
 
 # Main function
 main() {
-    # Check arguments
-    
+    # Parse optional -m flag
+    local max_iterations=0  # 0 means unlimited
+    while getopts ":m:" opt; do
+        case ${opt} in
+            m) max_iterations=${OPTARG} ;;
+            *) usage ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
     local queue_name=${1:-QUEUE1}
     local qmgr_name=${2:-MYQMGR}
     local qmhost=${3:-localhost}
@@ -129,6 +140,7 @@ main() {
     echo "Channel:       ${chlname}"
     echo "Username:      ${username}"
     echo "Password:      ****"
+    echo "Iterations:    $([ "${max_iterations}" -eq 0 ] && echo "unlimited" || echo "${max_iterations}")"
     echo "=================================="
     echo ""
     echo "Starting message sender (Press Ctrl+C to stop)..."
@@ -144,8 +156,10 @@ main() {
     # Set MQ authentication environment variables
     export MQSAMP_USER_ID="${username}"
     
-    # Main loop - send message every second
-    while true; do
+    # Main loop - send message every second (or up to max_iterations times)
+    local iteration=0
+    while [ "${max_iterations}" -eq 0 ] || [ "${iteration}" -lt "${max_iterations}" ]; do
+        ((iteration++))
         # Get current timestamp
         timestamp=$(date '+%Y-%m-%d %H:%M:%S.%3N')
         
@@ -162,6 +176,7 @@ main() {
         # Wait 1 second before next message
         sleep 0.1
     done
+    cleanup
 }
 
 # Run main function with all arguments

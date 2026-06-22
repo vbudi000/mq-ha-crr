@@ -1,5 +1,6 @@
 #!/bin/bash
-source ./hacrrenv.sh
+source $(dirname "$0")/hacrrenv.sh
+
 if [[ $(hostname -s) != "$lbhost" ]]; then
     echo "Error: Not running on $lbhost (current host: $(hostname))" >&2
     exit 1

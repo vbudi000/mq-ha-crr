@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source ./hacrrenv.sh
+source $(dirname "$0")/hacrrenv.sh
+
 curpath="${1:-/root}"  
 
 tarfile=${mqserver}

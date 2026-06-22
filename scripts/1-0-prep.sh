@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Source environment variables
+source $(dirname "$0")/hacrrenv.sh
+
+# Verify this host is the load balancer
+if [ "$(hostname -s)" != "${lbhost}" ]; then
+    echo "Error: this script must run on ${lbhost}, current host is $(hostname)"
+    exit 1
+fi
+
 cat <<EOF | ./1-1-setupssh.sh
 TheMQPassw0rd123!
 TheMQPassw0rd123!

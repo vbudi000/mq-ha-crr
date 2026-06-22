@@ -2,7 +2,8 @@
 
 curnode=$(hostname -s)
 
-source ./hacrrenv.sh
+source $(dirname "$0")/hacrrenv.sh
+
 cluster1=($host11 $host12 $host13)
 cluster2=($host21 $host22 $host23)
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-source hacrrenv.sh
+source $(dirname "$0")/hacrrenv.sh
 sudo systemctl stop mqmonitor@${qmname}
 sudo systemctl disable mqmonitor@${qmname}
 sudo su - mqm endmqweb

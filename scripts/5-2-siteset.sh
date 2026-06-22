@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./hacrrenv.sh
+source $(dirname "$0")/hacrrenv.sh
 
 if [ "$(id -u)" -ne 0 ]; then
     echo "Error: This script must be run as root"

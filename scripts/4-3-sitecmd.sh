@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./hacrrenv.sh
+source $(dirname "$0")/hacrrenv.sh
 if [ $# -ne 2 ]; then
     exit 1
 fi
