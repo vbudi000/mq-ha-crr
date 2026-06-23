@@ -1,155 +1,161 @@
-# Unplanned switch - disaster recovery
+# Unplanned Switch — Disaster Recovery
 
 
 ## Disaster
 
-Now first lets simulate a disaster:
+Simulate a disaster with the following steps:
 
-1. Stop all message input - the `mq_message_sender.sh` program
+1. Stop all message input by terminating the `mq_message_sender.sh` program.
 
-2. Clean up the queue QUEUE1 by running `mq_message_receiver.sh`. 
+2. Drain the queue by running `mq_message_receiver.sh`.
 
-3. Check that QDEPTH of the QUEUE1 is 0 and then proceed.
+3. Confirm that the `QDEPTH` of `QUEUE1` is `0` before continuing.
 
-4. Run `mq_message_sender.sh 5` - which will send 5 messages to the QUEUE1 and it will be replicated. 
+4. Send 5 messages to `QUEUE1` so they are replicated to SITE2:
 
-``` bash
-cd mq-ha-crr/scripts
-sudo su - mqm /tmp/mq_message_sender.sh 5
-```
+    ``` bash
+    echo "/tmp/mq_message_sender.sh -m 5" | su - mqm
+    ```
 
-5. Shutdown all QueueManagers by running the command:
+5. Shut down all Queue Managers:
 
-``` bash
-cd mq-ha-crr/scripts
-./4-3-sitecmd.sh SITE1 stop
-./4-3-sitecmd.sh SITE2 stop
-```
+    ``` bash
+    ./4-3-sitecmd.sh SITE1 stop
+    ./4-3-sitecmd.sh SITE2 stop
+    ```
 
-7. Start a Live environment on SITE2 and check its status 
+6. Bring up a Live environment on SITE2 and check its status:
 
-``` bash
-source ./hacrrenv.sh
-./5-2-siteset.sh SITE2 Live
-./4-3-sitecmd.sh SITE2 start
-./rundspmq.sh ${host21}
-```
+    ``` bash
+    ./5-2-siteset.sh SITE2 Live
+    ./4-3-sitecmd.sh SITE2 start
+    ./rundspmq ${host21}
+    ```
 
-8. Note that the status is Pending recovery - waiting for connection. This is caused by the Recovery site is enabled and it is waiting for reconnection. 
+7. Note that `GRPROLE` is `Pending live` and `GRSTATUS` is `Waiting for connection`. This is because the Recovery group is still enabled and waiting for the other site to reconnect. Disable CRR and restart:
 
-``` bash
-./4-3-sitecmd.sh SITE2 stop
-./6-1-crrswitch.sh SITE2 No
-./4-3-sitecmd.sh SITE2 start
-./rundspmq.sh ${host21}
-```
+    ``` bash
+    ./4-3-sitecmd.sh SITE2 stop
+    ./6-1-crrswitch.sh SITE2 No
+    ./4-3-sitecmd.sh SITE2 start
+    ./rundspmq ${host21}
+    ```
 
-9. If the status becomes active - start the message sender for 5 messages. Then check the receiver - make sure that all the send messages from step 4 and this step are retrieved (10 messages)
+8. Once the Queue Manager is active, send another 5 messages, then receive all messages and verify that you receive 10 in total (5 from step 4 and 5 from this step):
 
-## Recovery 
+    ``` bash
+    echo "/tmp/mq_message_sender.sh -m 5" | su - mqm
+    echo "/tmp/mq_message_receiver.sh QUEUE1 MYQMGR mqm mqm" | su - mqm
+    ```
 
-To get back to a full CRR environment, perform the following:
+## Recovery
 
-1. Make SITE1 a recovery site 
+To restore the full CRR environment, perform the following steps:
 
-``` bash
-cd mq-ha-crr/scripts
-./5-2-siteset.sh SITE1 Recovery
-./4-3-sitecmd.sh SITE1 start
-```
+1. Stop SITE2 and re-enable CRR:
 
-2. Check status
+    ``` bash
+    ./4-3-sitecmd.sh SITE2 stop
+    ./6-1-crrswitch.sh SITE2 Yes
+    ./4-3-sitecmd.sh SITE2 start
+    ```
 
-``` bash
-cd mq-ha-crr/scripts
-./4-1-checkhacrr.sh
-```
+2. Configure SITE1 as the Recovery site and start it:
 
-    - Watch the status of SITE2 to become `Live`
-    - Watch the SITE1 status of INSYNC and BACKLOG - eventually `INSYNC` becomes `Yes` and `BACKLOG` becomes `0`
+    ``` bash
+    ./5-2-siteset.sh SITE1 Recovery
+    ./4-3-sitecmd.sh SITE1 start
+    ```
 
-## Split brain
+3. Check the status:
 
-Now that is a normal DR without any split brain scenario
+    ``` bash
+    ./4-1-checkhacrr.sh
+    ```
 
-1. Stop all message input - the `mq_message_sender.sh` program; and swap the site back to SITE1.
+    - Watch for SITE2 `GRPROLE` to become `Live`.
+    - Watch SITE1's `INSYNC` and `BACKLOG` — eventually `INSYNC` becomes `Yes` and `BACKLOG` becomes `0`.
 
-``` bash
-./5-1-siteswap.sh
-```
+## Split Brain
 
-2. Clean up the queue QUEUE1 by running `mq_message_receiver.sh`. 
+To simulate a split-brain scenario, send a continuous message stream to the Queue Managers while abruptly stopping SITE2. The resulting state is illustrated below:
 
-3. Check that QDEPTH of the QUEUE1 is 0 and then proceed.
+![images/006-01-LSN.png](images/006-01-LSN.png)
 
-4. Run `mq_message_sender.sh 5` - which will send 5 messages to the QUEUE1 and it will be replicated. 
+1. Stop all message input and swap the active site back to SITE1:
 
-``` bash
-cd mq-ha-crr/scripts
-sudo su - mqm /tmp/mq_message_sender.sh 5
-```
+    ``` bash
+    ./5-1-siteswap.sh
+    ```
 
-5. Shutdown all QueueManagers by running the command:
+2. Drain the queue by running `mq_message_receiver.sh`.
 
-``` bash
-cd mq-ha-crr/scripts
-./4-3-sitecmd.sh SITE1 stop
-./4-3-sitecmd.sh SITE2 stop
-```
+3. Confirm that the `QDEPTH` of `QUEUE1` is `0` before continuing.
 
-6. Simulate a split brain situation by feeding messages to only SITE1, set the CRR `Enabled` to `No`: 
+4. Send 5 messages to `QUEUE1` so they are replicated. Note the messages received:
 
-``` bash
-cd mq-ha-crr/scripts
-./6-1-crrswitch.sh SITE1 No
-./4-3-sitecmd.sh SITE1 start
-su - mqm /tmp/mq_message_sender.sh 2
-./4-3-sitecmd.sh SITE1 stop
-./6-1-crrswitch.sh SITE1 Yes
-```
+    ``` bash
+    echo "/tmp/mq_message_sender.sh -m 5" | su - mqm
+    ```
 
-7. Start a Live environment on SITE2 without CRR enabled and check its status 
+5. Shut down the SITE2 Queue Managers to simulate a network failure where logs are not replicated:
 
-``` bash
-source ./hacrrenv.sh
-./5-2-siteset.sh SITE2 Live
-./6-1-crrswitch.sh SITE2 No
-./4-3-sitecmd.sh SITE2 start
-```
+    ``` bash
+    ./4-3-sitecmd.sh SITE2 stop
+    ```
 
-9. If the status becomes active - start the message sender for 5 messages. Then check the receiver - make sure that all the send messages from step 4 and this step are retrieved (10 messages)
+6. Send 2 more messages. These messages cannot be propagated to SITE2 because it is stopped:
 
-10. Try to recover from disaster
+    ``` bash
+    echo "/tmp/mq_message_sender.sh -m 2" | su - mqm
+    ssh $host11 dspmq -o nativeha -g
+    ```
 
-``` bash
-cd mq-ha-crr/scripts
-./5-2-siteset.sh SITE1 Recovery
-./4-3-sitecmd.sh SITE1 start
-./4-1-checkhacrr.sh
-```
+    Save the `RECOVLSN` value — you will need it to identify uncommitted transactions later.
 
-    - What are the status of the configuration
-    - Do you see `GRSTATUS` of `Partitioned` 
-    - Save the checkhacrr output - especially the collected LSN numbers
+7. Stop SITE1 and promote SITE2 to Live without CRR enabled, then check its status:
 
-11. Stop all Queue Managers
+    ``` bash
+    ./4-3-sitecmd.sh SITE1 stop
+    ./5-2-siteset.sh SITE2 Live
+    ./6-1-crrswitch.sh SITE2 No
+    ./4-3-sitecmd.sh SITE2 start
+    ```
 
-``` bash
-./4-3-sitecmd.sh SITE1 stop
-./4-3-sitecmd.sh SITE2 stop
-```
+8. Attempt to restore full CRR by configuring SITE1 as Recovery and re-enabling CRR on SITE2:
 
-12. Get dmpmqlog for SITE1 and SITE2
+    ``` bash
+    ./5-2-siteset.sh SITE1 Recovery
+    ./6-1-crrswitch.sh SITE2 Yes
+    ./4-3-sitecmd.sh SITE2 stop
+    ./4-3-sitecmd.sh SITE1 start
+    ./4-1-checkhacrr.sh
+    ```
 
-13. Analyze the output
+    - Review the status output.
+    - Do you see `GRSTATUS` of `Partitioned`?
+    - Save the `checkhacrr` output, paying particular attention to the LSN values.
 
-14. Cold start SITE1
+9. Stop all Queue Managers:
 
-``` bash
-./6-0-coldsite.sh SITE1
-```
+    ``` bash
+    ./4-3-sitecmd.sh SITE1 stop
+    ./4-3-sitecmd.sh SITE2 stop
+    ```
 
-Fix all to have SITE1 Live and SITE2 Recovery
+10. Dump the MQ log for SITE1 starting from the saved `RECOVLSN` to examine uncommitted transactions:
 
+    ``` bash
+    source hacrrenv.sh
+    ssh $host11 "dmpmqlog -m MYQMGR -s <RECOVLSN> -r ObjectName=QUEUE1" 
+    ```
 
+11. Analyse the output to understand which messages were committed on SITE1 but not replicated to SITE2.
 
+12. Cold-start SITE1 to discard its diverged log:
+
+    ``` bash
+    ./6-0-coldsite.sh SITE1
+    ```
+
+13. Reconfigure the environment with SITE1 as Live and SITE2 as Recovery, and verify full CRR operation.

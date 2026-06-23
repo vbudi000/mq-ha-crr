@@ -1,19 +1,17 @@
-# Installing IBM MQ 
+# Installing IBM MQ
 
-## Preparation
-Download IBM MQ from Passport Advantage Online site or IBM Software Download site. The following are the list of part numbers and filenames that you can use to search the download. The size for 9.4.x is roughly 0.5GB. The following are the Part Number and filename of the installers. 
+In this section, you will:
 
-- M0SJDML - 9.4.4.0-IBM-MQ-LinuxX64_.tar.gz
-- M0XKZML - 9.4.5.0-IBM-MQ-LinuxX64_.tar.gz
-- M11G1ML - 10.0.0.0-IBM-MQ-LinuxX64.tar.gz
+- [Install MQ Software](#installing-mq-software)
+- [Set Up the MQ Web Console](#mq-web-console)
 
-The next section, the installation and Web console should be run on each of the 6 servers. Automatic installation on the servers are provided in [scripts/2-0-runinstall.sh](scripts/2-0-runinstall.sh), or you can run the installation manually. The installation file must be put on each of the 6 servers. So that it can be installed later.
+Both the MQ software and the MQ Web Console must be installed on each of the 6 servers. Automated installation is provided by [scripts/2-0-runinstall.sh](scripts/2-0-runinstall.sh), or you can follow the manual steps below. The installation archive must be placed on each of the 6 servers before running the installer.
 
-## Installing
+## Installing MQ Software
 
-To install IBM MQ you can use the script in [scripts/2-1-install.sh](scripts/2-1-install.sh). Or you can follow these procedure: 
+To install IBM MQ, use the script [scripts/2-1-install.sh](scripts/2-1-install.sh), or follow this procedure manually:
 
-1. Prepare the `mqm` user and group. The following commands can be used, but if your environment has a different mechanism for creating users and groups, follow the procedure. The last part is to increase the file and processes limit for the mqm user.
+1. Prepare the `mqm` user and group. The commands below work for most environments; if your environment uses a different mechanism for user and group creation, follow that procedure instead. The final step increases the file and process limits for the `mqm` user.
 
     ``` bash
     # Create mqm user and group with consistent GID
@@ -26,14 +24,14 @@ To install IBM MQ you can use the script in [scripts/2-1-install.sh](scripts/2-1
     EOF
     ```
 
-2. Install several pre-requisite software for IBM MQ.
+2. Install the prerequisite packages for IBM MQ:
 
     ``` bash
     dnf -y install bc ca-certificates openssl libstdc++ wget util-linux
     dnf -y install shadow-utils glibc-common findutils gawk
     ```
 
-3. Open several ports from firewalld if necessary, these are the default ports that are being used in MQ.
+3. Open the required ports in `firewalld` if necessary. These are the default ports used by MQ:
 
     ``` bash
     firewall-cmd --permanent --add-port=mqlistener-1414/tcp
@@ -43,7 +41,7 @@ To install IBM MQ you can use the script in [scripts/2-1-install.sh](scripts/2-1
     firewall-cmd --permanent --add-port=mqweb-9443/tcp
     ```
 
-4. Define the required paths for MQ.
+4. Create the required directories for MQ:
 
     ``` bash
     mkdir /var/mqm
@@ -53,7 +51,7 @@ To install IBM MQ you can use the script in [scripts/2-1-install.sh](scripts/2-1
     chown mqm:mqm /opt/mqm
     ```
 
-5. Install MQ, assuming that the tar installable file is in the `/tmp` directory, you can run the following commands.
+5. Install MQ. Assuming the installation archive is in the `/tmp` directory, run:
 
     ``` bash
     cd /tmp
@@ -65,7 +63,7 @@ To install IBM MQ you can use the script in [scripts/2-1-install.sh](scripts/2-1
     dnf install -y MQSeries*.rpm
     ```
 
-6. Setup a profile that set the MQ environment for all users
+6. Set up a system-wide profile that configures the MQ environment for all users:
 
     ``` bash
     echo "source /opt/mqm/bin/setmqenv -s" > /etc/profile.d/mqm.sh
@@ -78,9 +76,9 @@ To install IBM MQ you can use the script in [scripts/2-1-install.sh](scripts/2-1
 
 ## MQ Web Console
 
-This last part is optional. You can install MQ Web Console for easier management of you MQ resources. The script is provided in [scripts/2-2-mqweb.sh](scripts/2-2-mqweb.sh)
+This step is optional. The MQ Web Console provides a graphical interface for managing MQ resources. The setup script is provided in [scripts/2-2-mqweb.sh](scripts/2-2-mqweb.sh).
 
-1. To install the web console, you must act as `mqm` user
+1. Switch to the `mqm` user and initialise the web console:
 
     ``` bash
     su - mqm
@@ -88,25 +86,24 @@ This last part is optional. You can install MQ Web Console for easier management
     endmqweb
     ```
 
-2. After starting the MQ web, the directory and files are created. The easiest way is to copy the sample configuration for the basic registry and set up a couple of parameters.
+2. Starting and stopping the web console creates the required directory structure. Copy the sample basic registry configuration and set the required parameters:
 
     ``` bash
     cd /var/mqm/web/installations/Installation1/servers/mqweb/
     cp mqwebuser.xml mqwebuser.xml.bak
     cp /opt/mqm/web/mq/samp/configuration/basic_registry.xml mqwebuser.xml
 
-    cat <<EOF> >>mqwebuser.xml
+    cat <<EOF >> mqwebuser.xml
     <variable name="httpsPort" value="9443"/>
     <variable name="httpHost" value="*"/>
-    <variable name="mqRestMessagingEnabled" value="true”/>
+    <variable name="mqRestMessagingEnabled" value="true"/>
     EOF
     ```
 
-3. Now start the MQ Web Console
+3. Start the MQ Web Console:
 
     ``` bash
     strmqweb
     ```
 
-4. MQ Web Console is available at `https://${host}:9443/ibmmq/console` and you can login as `mqadmin` with the password of `mqadmin`
- 
+4. The MQ Web Console is available at `https://${host}:9443/ibmmq/console`. Log in as `mqadmin` with the password `mqadmin`.

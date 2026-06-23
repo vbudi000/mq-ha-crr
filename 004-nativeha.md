@@ -1,69 +1,74 @@
 # Demonstrate Native HA
 
-This section starts the demonstration portion of the IBM MQ nativeHA and CRR functionality. This unit focuses on the Native HA environment. So you will mainly work on the SITE1 environment with host11, host12 and host13 as the main participant.
+This section begins the demonstration portion of IBM MQ Native HA and CRR functionality. This unit focuses on the Native HA environment, so you will primarily work with the SITE1 environment — hosts `host11`, `host12`, and `host13`.
 
-## Understanding native HA
+- [Native HA Status](#understanding-native-ha)
+- [Demonstrate Native HA](#demonstrating-automatic-failover)
 
-To understand the native HA and CRR environment, the command to check that is `dspmq -o nativeha -g -x -m qmgr` on which
-- the `-o` displays only information about native HA and CRR
-- the `-x` displays the local Native HA members
-- the `-g` displays local and remote group information
-- the `-m` select which queue manager to report from
+## Understanding Native HA
 
-From the bastion, you can run the script [scripts/4-1-checkhacrr.sh](scripts/4-1-checkhacrr.sh)
+To inspect the Native HA and CRR environment, use the command `dspmq -o nativeha -g -x -m <qmgr>`:
 
-The following is a sample output:
+- `-o` — displays only Native HA and CRR information
+- `-x` — displays the local Native HA members
+- `-g` — displays local and remote group information
+- `-m` — selects which Queue Manager to report on
+
+From the bastion, you can run the script [scripts/4-1-checkhacrr.sh](scripts/4-1-checkhacrr.sh).
+
+The following are sample outputs:
+
 ![images/004-01-ha-live.png](images/004-01-ha-live.png)
 ![images/004-02-ha-recovery.png](images/004-02-ha-recovery.png)
 
-In the Live side, the command is run from the first instance arbitrarily. There is no specific preference on which instance will be active. 
+In the Live site, the command can be run from any instance — there is no fixed preference for which instance will be active.
 
-- The first line is the short information of the current Queue Manager in the specific host. 
-- The `INSTANCE` lines are the local native HA group of Queue Manager (from option `-x`). The important information are:
-    - the individual `ROLE`s (Active, Leader, Replica) - only the Active instance is accepting client connection
-    - The `CONNACTV` indicates whether the connection is active on 9414
-    - The `INSYNC` shows whether the group member is synchronized. If so the `BACKLOG` should be 0 and the `ACKLSN` should all be the same.
-- The GRPNAME lines show the status of the interconnected groups (from option `-g`). The important information are:
-    - the `GRPROLE` of Live or Recovery
-    - The local group is indicated in the QMNAME line on the top, and should have a `GRSTATUS` of Normal
-    - The remote group should have the `INSYNC` status of yes
-    - When every pieces are in sync, then all the `RECOVLSN` should be the same and also matches with `ACKLSN` of the individual instances
-- Note that the timestamp of the timing is also presented, but the LSN (Log Sequence Number) are more accurate on identifying the status.
+- The **first line** shows a brief status of the Queue Manager on the local host.
+- The **`INSTANCE` lines** show the members of the local Native HA group (from `-x`). Key fields:
+    - `ROLE` (Active, Leader, Replica) — only the Active instance accepts client connections.
+    - `CONNACTV` — indicates whether the replication connection on port 9414 is active.
+    - `INSYNC` — shows whether the member is synchronised. When in sync, `BACKLOG` should be `0` and all `ACKLSN` values should match.
+- The **`GRPNAME` lines** show the status of interconnected groups (from `-g`). Key fields:
+    - `GRPROLE` — either `Live` or `Recovery`.
+    - The local group appears in the `QMNAME` line at the top and should have a `GRSTATUS` of `Normal`.
+    - The remote group should show `INSYNC` as `Yes`.
+    - When everything is in sync, all `RECOVLSN` values should match the `ACKLSN` of the individual instances.
+- LSN (Log Sequence Number) values are more reliable than timestamps for determining synchronisation status.
 
-## Demonstrating automatic failover
+## Demonstrating Automatic Failover
 
-Follow these procedure:
+Follow this procedure:
 
-1. Open three terminal (ssh) session to the bastion host. 
+1. Open three terminal (SSH) sessions to the bastion host.
 
-2. Use one session to ssh to the one of the Live Queue Manager group, here we assume that SITE1 is Live. Keep showing dspmq output using a watch command:
+2. In the first session, SSH to one of the Live Queue Manager hosts (assuming SITE1 is Live) and continuously display the `dspmq` output:
 
     ``` bash
     ssh ${host11}
     watch -n 5 dspmq -o nativeha -g -x
     ```
 
-2. Use another session run the mq_message_sender.sh program to launch a raandomized message to the MQ with timestamp.
+3. In the second session, run the `mq_message_sender.sh` script to send randomised messages with timestamps to MQ:
 
     ``` bash
     cp scripts/mq_message_sender.sh /tmp
     su - mqm /tmp/mq_message_sender.sh
     ```
 
-3. Run these command to switch the active MQ server as you watch the changes in the other `dspmq` output and the message sender window:
+4. In the third session, trigger an active Queue Manager failover and watch the changes in the other two windows:
 
     ``` bash
     ssh <activemqhost> sudo systemctl restart mqmonitor@<qmgr>
     ```
 
-    note - if you are lazy to see which host is actually active, you can run the following script
-    
+    If you prefer not to look up which host is currently active, use the following script instead:
+
     ``` bash
     bash scripts/4-2-haswap.sh
     ```
 
-4. As you switch around the active queue manager, you can see in the watch output that the Active Queue Manager instance will move around the different members and the restarted Queue Manager instance that was Active becomes Replica. The sender program will shows failure but you can notice that the timestamp between the successful iteration are between less than 2 seconds.
+5. As you cycle through active Queue Manager instances, the `watch` output will show the Active role moving between members. The previously Active instance becomes a Replica after restarting. The message sender will report brief failures, but the gap between successful messages should be less than 2 seconds.
 
     ![images/004-03-haswap.png](images/004-03-haswap.png)
 
-    In the highlighted section, the time between successful messages are almost 1.7 seconds. 
+    In the highlighted section, the time between successful messages is approximately 1.7 seconds.

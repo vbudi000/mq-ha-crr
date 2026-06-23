@@ -89,7 +89,8 @@ send_message() {
         echo -e "${GREEN}[SUCCESS]${NC} ${full_message}"
         return 0
     else
-        echo -e -n "${RED}-${NC}"
+        rc=$(cat /tmp/putcout | grep -oP 'reason code\s*\K.*')
+        echo -e -n "${RED}-${rc}-${NC}"
         return 1
     fi
 }
