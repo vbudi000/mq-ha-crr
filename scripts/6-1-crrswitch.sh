@@ -38,7 +38,7 @@ elif [[ "$dir" == "Yes" ]]; then
     done
 else
     echo "Condition not matched - need to recheck"
-    echo "${dir} status is not Yes or No}"
+    echo "${dir} is not a valid value — must be Yes or No"
     exit 9
 fi
 

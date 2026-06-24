@@ -25,7 +25,7 @@ for host in "${hosts[@]}"; do
     echo "Processing $host"
     # Your commands for each host here
     scp ${curpath}/${tarfile} ${host}:/tmp/${tarfile}
-    scp hacrrenv.sh ${host}/tmp/hacrrenv.sh 2>/dev/null
+    scp hacrrenv.sh ${host}:/tmp/hacrrenv.sh 2>/dev/null
     scp 2-1-install.sh ${host}:/tmp/2-1-install.sh 2>/dev/null
     scp 2-2-mqweb.sh ${host}:/tmp/2-2-mqweb.sh 2>/dev/null
     ssh ${host} "cd /tmp && bash 2-1-install.sh ${tarfile}" 2>/dev/null

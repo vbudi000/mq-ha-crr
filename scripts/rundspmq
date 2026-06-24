@@ -1,5 +1,5 @@
 #!/bin/bash
-source hacrrenv.sh
+source $(dirname "$0")/hacrrenv.sh
 
 host=${1:-$host11}
 

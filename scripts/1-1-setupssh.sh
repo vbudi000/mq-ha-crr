@@ -23,7 +23,8 @@ if ! command -v sshpass &>/dev/null; then
 fi
 
 # Read the shared root password from stdin (piped in by the caller)
-echo "Enter shared ssh password for root in MQ servers"
+# Note: message goes to stderr so it is not consumed when stdin is a pipe
+echo "Enter shared ssh password for root in MQ servers" >&2
 read -r ssh_password
 
 hosts=($host11 $host12 $host13 $host21 $host22 $host23)

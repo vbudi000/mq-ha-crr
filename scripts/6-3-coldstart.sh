@@ -12,5 +12,7 @@ sudo systemctl stop mqmonitor@$qmgr
 cp /var/mqm/qmgrs/$qmgr/qm.ini /tmp/qm.ini
 dltmqm $qmgr
 crtmqm -lr ${curnode} -lf 8192 -lp 10 -ls 10 -p 1414 ${qmgr}
+# Restore qm.ini (preserves NativeHA config) and fix ownership
 cp /tmp/qm.ini /var/mqm/qmgrs/$qmgr/qm.ini
+chown mqm:mqm /var/mqm/qmgrs/$qmgr/qm.ini
 sudo systemctl start mqmonitor@$qmgr

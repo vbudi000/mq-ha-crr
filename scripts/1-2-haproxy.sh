@@ -2,21 +2,22 @@
 source $(dirname "$0")/hacrrenv.sh
 
 if [[ $(hostname -s) != "$lbhost" ]]; then
-    echo "Error: Not running on $lbhost (current host: $(hostname))" >&2
+    echo "Error: Not running on $lbhost (current host: $(hostname -s))" >&2
     exit 1
 fi
 if [ "$(id -u)" -ne 0 ]; then
-    echo "Error: This script must be run as root"
+    echo "Error: This script must be run as root" >&2
     exit 1
 fi
 
-sudo dnf -y install haproxy
+dnf -y install haproxy
 
-sudo systemctl stop haproxy
+systemctl stop haproxy
 
 mv /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.bak
 
-cat <<EOF >>/etc/haproxy/haproxy.cfg
+# Use > not >> because the original file was just moved away
+cat <<EOF >/etc/haproxy/haproxy.cfg
 defaults
     mode                    tcp
     log                     global

@@ -45,18 +45,17 @@ usage() {
 retrieve_message() {
     local queue=$1
     local qmgr=$2
-    
+    local pass=$3
+
     # Set MQ environment variables for authentication
-    mqsvr="localhost"
-    export MQSERVER="SYSTEM.DEF.SVRCONN/TCP/$mqsvr(1414)"
-    
-    # Retrieve message using amqgetc
-    # Password is sent as first line
-    # amqgetc will retrieve one message and display it
-    echo "${password}" | amqsgetc "${queue}" "${qmgr}" 2>&1
-    sleep 1
+    export MQSERVER="SYSTEM.DEF.SVRCONN/TCP/localhost(1414)"
+
+    # Retrieve message using amqsgetc
+    # Password is sent as first line; capture exit code before sleep
+    echo "${pass}" | amqsgetc "${queue}" "${qmgr}" 2>&1
     local exit_code=$?
-    
+    sleep 1
+    return ${exit_code}
 }
 
 # Function to handle cleanup on exit
@@ -162,19 +161,30 @@ main() {
     export MQSAMP_USER_ID="${username}"
     
     # Main loop
-        while true; do
-            # Check if max count reached
-            if [ $max_count -gt 0 ] && [ $message_count -ge $max_count ]; then
-                echo ""
-                echo -e "${GREEN}Maximum message count (${max_count}) reached${NC}"
-                cleanup
-            fi
-            
-            # Retrieve message from MQ
-            retrieve_message "${queue_name}" "${qmgr_name}" "${password}" "${browse_mode}"
-            local result=$?
-            
-        done
+    while true; do
+        # Check if max count reached
+        if [ $max_count -gt 0 ] && [ $message_count -ge $max_count ]; then
+            echo ""
+            echo -e "${GREEN}Maximum message count (${max_count}) reached${NC}"
+            cleanup
+        fi
+
+        # Retrieve message from MQ
+        retrieve_message "${queue_name}" "${qmgr_name}" "${password}"
+        local result=$?
+
+        if [ $result -eq 0 ]; then
+            ((message_count++))
+        else
+            ((error_count++))
+        fi
+
+        # In non-continuous mode, exit after first retrieval attempt
+        if [ "$continuous" = false ]; then
+            break
+        fi
+    done
+    cleanup
 }
 
 # Run main function with all arguments

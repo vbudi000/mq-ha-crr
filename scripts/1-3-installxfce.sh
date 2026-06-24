@@ -3,11 +3,11 @@
 source $(dirname "$0")/hacrrenv.sh
 
 if [[ $(hostname -s) != "$lbhost" ]]; then
-    echo "Error: Not running on $lbhost (current host: $(hostname))" >&2
+    echo "Error: Not running on $lbhost (current host: $(hostname -s))" >&2
     exit 1
 fi
 if [ "$(id -u)" -ne 0 ]; then
-    echo "Error: This script must be run as root"
+    echo "Error: This script must be run as root" >&2
     exit 1
 fi
 
@@ -18,7 +18,7 @@ sudo systemctl set-default graphical.target
 sudo dnf -y install tigervnc-server
 
 printf "passw0rd\npassw0rd\n" | vncpasswd
-echo ":1=root" >> /etc/tigervnc/tigervnc.users
+echo ":1=root" >> /etc/tigervnc/vncserver.users
 sed -i 's/gnome/xfce/g' "/etc/tigervnc/vncserver-config-defaults"
 
 systemctl enable vncserver@:1

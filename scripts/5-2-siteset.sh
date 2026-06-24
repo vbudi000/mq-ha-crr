@@ -42,7 +42,7 @@ elif [[ "$dir" == "Live" ]]; then
     done
 else
     echo "Condition not matched - need to recheck"
-    echo "${dir} status is not Recovery or Live}"
+    echo "${dir} is not a valid role — must be Recovery or Live"
     exit 9
 fi
 
