@@ -5,17 +5,9 @@ if [ "$(id -u)" -ne 0 ]; then
     echo "Error: This script must be run as root"
     exit 1
 fi
-path=$(pwd)  # Get current path
-last_two=$(basename "$(dirname "$path")")/$(basename "$path")
-if [[ "$last_two" == "mq-ha-crr/scripts" ]]; then
-    echo "Checking path, checking tar file"
-else
-    echo "You must run this script from mq-ha-crr/scripts"
-    exit 1
-fi
 
 if [ $# -ne 2 ]; then
-    echo "${0} site {Recovery|Live}"
+    echo "${0} site {Yes|No}"
     exit 1
 fi
 

@@ -3,6 +3,11 @@
 # must be run as mqm at the active instance
 source $(dirname "$0")/hacrrenv.sh
 
+if [ "$(whoami)" != "mqm" ]; then
+    echo "Error: This script must be run as user 'mqm'"
+    exit 1
+fi
+
 # Check which site is active
 site1status=$(ssh ${host11} dspmq -o nativeha -g -m ${qmname}  2>/dev/null | grep "QMNAME(${qmname})" | grep -oP 'GRPROLE\(\K[^)]+')
 site2status=$(ssh ${host21} dspmq -o nativeha -g -m ${qmname}  2>/dev/null | grep "QMNAME(${qmname})" | grep -oP 'GRPROLE\(\K[^)]+')

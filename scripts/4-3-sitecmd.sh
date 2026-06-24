@@ -1,8 +1,15 @@
 #!/bin/bash
 source $(dirname "$0")/hacrrenv.sh
+
+if [[ $(hostname -s) != "$lbhost" ]]; then
+    echo "Error: Not running on $lbhost (current host: $(hostname -s))" >&2
+    exit 1
+fi
+
 if [ $# -ne 2 ]; then
     exit 1
 fi
+
 action=$2
 site=$1
 QMGR=$qmname

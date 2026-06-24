@@ -1,4 +1,10 @@
 #!/bin/bash
+
+if [ "$(whoami)" != "mqm" ]; then
+    echo "Error: This script must be run as user 'mqm'"
+    exit 1
+fi
+
 qmgr="${1:-MYQMGR}"
 curnode=$(hostname -s)
 # run as mqm

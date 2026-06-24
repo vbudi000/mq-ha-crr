@@ -1,5 +1,10 @@
 #!/bin/bash
 source $(dirname "$0")/hacrrenv.sh
+if [[ $(hostname -s) != "$lbhost" ]]; then
+    echo "Error: Not running on $lbhost (current host: $(hostname -s))" >&2
+    exit 1
+fi
+
 # Check which site is active
 site1status=$(ssh ${host11} dspmq -o nativeha -g -m ${qmname}  2>/dev/null | grep "QMNAME(${qmname})" | grep -oP 'GRPROLE\(\K[^)]+')
 site2status=$(ssh ${host21} dspmq -o nativeha -g -m ${qmname}  2>/dev/null | grep "QMNAME(${qmname})" | grep -oP 'GRPROLE\(\K[^)]+')
@@ -32,30 +37,24 @@ else
     exit 9
 fi
 
+hosts=($host11 $host12 $host13 $host21 $host22 $host23)  # Creates an array containing these hosts
+
 echo "Change ownership back to mqm for qm.ini files"
-ssh ${host11} sudo chown mqm:mqm /var/mqm/qmgrs/${QMGR}/qm.ini 2>/dev/null
-ssh ${host12} sudo chown mqm:mqm /var/mqm/qmgrs/${QMGR}/qm.ini 2>/dev/null
-ssh ${host13} sudo chown mqm:mqm /var/mqm/qmgrs/${QMGR}/qm.ini 2>/dev/null
-ssh ${host21} sudo chown mqm:mqm /var/mqm/qmgrs/${QMGR}/qm.ini 2>/dev/null
-ssh ${host22} sudo chown mqm:mqm /var/mqm/qmgrs/${QMGR}/qm.ini 2>/dev/null
-ssh ${host23} sudo chown mqm:mqm /var/mqm/qmgrs/${QMGR}/qm.ini 2>/dev/null
+for host in "${hosts[@]}"; do
+    ssh ${host} sudo chown mqm:mqm /var/mqm/qmgrs/${QMGR}/qm.ini 2>/dev/null
+done
 
 date '+%Y-%m-%d %H:%M:%S.%3N'
 
 set -x
-ssh ${host11} sudo systemctl stop mqmonitor@${QMGR} 2>/dev/null
-ssh ${host12} sudo systemctl stop mqmonitor@${QMGR} 2>/dev/null
-ssh ${host13} sudo systemctl stop mqmonitor@${QMGR} 2>/dev/null
-ssh ${host21} sudo systemctl stop mqmonitor@${QMGR} 2>/dev/null
-ssh ${host22} sudo systemctl stop mqmonitor@${QMGR} 2>/dev/null
-ssh ${host23} sudo systemctl stop mqmonitor@${QMGR} 2>/dev/null
+echo "Stopping QManagers"
+for host in "${hosts[@]}"; do
+    ssh ${host} sudo systemctl stop mqmonitor@${QMGR} 2>/dev/null
+done
 
-ssh ${host11} sudo systemctl start mqmonitor@${QMGR} 2>/dev/null
-ssh ${host12} sudo systemctl start mqmonitor@${QMGR} 2>/dev/null
-ssh ${host13} sudo systemctl start mqmonitor@${QMGR} 2>/dev/null
-ssh ${host21} sudo systemctl start mqmonitor@${QMGR} 2>/dev/null
-ssh ${host22} sudo systemctl start mqmonitor@${QMGR} 2>/dev/null
-ssh ${host23} sudo systemctl start mqmonitor@${QMGR} 2>/dev/null
-
+echo "Starting QManagers"
+for host in "${hosts[@]}"; do
+    ssh ${host} sudo systemctl start mqmonitor@${QMGR} 2>/dev/null
+done
 set +x
 date '+%Y-%m-%d %H:%M:%S.%3N'

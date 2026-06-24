@@ -12,6 +12,7 @@ set -x
 for host in "${hosts[@]}"; do
     echo "Processing $host"
     # Your commands for each host here
+    ssh ${host} "sudo systemctl stop mqmonitor@${qmname}"
     ssh ${host} "echo \"dltmqm ${qmname} && endmqweb \" | sudo su - mqm" 2>/dev/null
 done
 

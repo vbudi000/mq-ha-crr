@@ -6,15 +6,7 @@ if [ "$(id -u)" -ne 0 ]; then
     echo "Error: This script must be run as root"
     exit 1
 fi
-path=$(pwd)  # Get current path
-last_two=$(basename "$(dirname "$path")")/$(basename "$path")
-if [[ "$last_two" == "mq-ha-crr/scripts" ]]; then
-    echo "Checking path, checking tar file"
-else
-    echo "You must run this script from mq-ha-crr/scripts"
-    exit 1
-fi
-
+cd $(dirname "$0")
 
 hosts=($host11 $host12 $host13 $host21 $host22 $host23)  # Creates an array containing these hosts
 
@@ -28,3 +20,4 @@ for host in "${hosts[@]}"; do
     ssh ${host} "sudo bash /tmp/3-2-mqmonitor.sh ${qmname}" 2>/dev/null
 done
 
+./3-3-modqm.sh

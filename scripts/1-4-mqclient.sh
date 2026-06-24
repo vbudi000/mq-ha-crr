@@ -15,7 +15,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 # Check if file exists
 if [ ! -f "${curpath}/${tarfile}" ]; then
-    echo "Error: /root/${tarfile} does not exist"
+    echo "Error: ${curpath}/${tarfile} does not exist"
     exit 1
 fi
 

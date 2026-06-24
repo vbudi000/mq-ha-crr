@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$(whoami)" != "mqm" ]; then
-    echo "Error: This script must be run as user 'abc'"
+    echo "Error: This script must be run as user 'mqm'"
     exit 1
 fi
 host=$(hostname -s)
